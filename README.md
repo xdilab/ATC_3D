@@ -104,9 +104,6 @@ out skel qt;
 **Unity Scene Setup + Simulation View:**
 ![Unity Scene](unitythings.png)
 
-**Simulation Video:**
-- [Recording_2025-04-08_090602.mp4](Recording_2025-04-08_090602.mp4)
-
 ---
 
 ## 🔮 Future Use and Research Directions
