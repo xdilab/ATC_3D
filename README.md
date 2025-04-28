@@ -22,12 +22,18 @@ This phase includes:
 |-----------------------------|------------------|--------------------------------------------------|------|
 | **Blender**                 | 4.0              | 3D modeling of airport, runways, taxiways        | [Blender.org](https://www.blender.org/) |
 | **BlenderGIS Addon**        | 2.1.9            | Importing geospatial OSM data                    | [BlenderGIS GitHub](https://github.com/domlysz/BlenderGIS) |
-| **Blosm Addon (Blender)**   | 2.4.0            | OpenStreetMap terrain import                    | [Blosm Documentation](https://blosm.readthedocs.io/) |
+| **Blosm Addon (Blender)**   | 2.4.0            | OpenStreetMap terrain import                    | [Blosm Documentation](https://github.com/vvoovv/blosm) |
 | **Overpass Turbo**          | Web              | OSM data extraction and queries                 | [Overpass Turbo](https://overpass-turbo.eu/) |
 | **Unity**                   | 2022.3 LTS       | Real-time simulation and scene setup            | [Unity](https://unity.com/) |
 | **Visual Studio Code**      | 1.88.1           | C# script editing for Unity                     | [VS Code](https://code.visualstudio.com/) |
 | **Free3D (Model Source)**   | Web              | Aircraft model download                         | [Free3D](https://free3d.com/) |
 | **OpenStreetMap (OSM)**     | Public Dataset   | Real-world airport mapping data                 | [OpenStreetMap](https://www.openstreetmap.org/) |
+
+## Links to Tutorials 
+
+Blosm - https://www.youtube.com/watch?v=Thx08Q4etVc
+BlenderGIS - https://www.youtube.com/watch?v=h-ALdlxfygI&t=919s
+
 
 ---
 
@@ -51,16 +57,15 @@ README.md             - Project overview (this file)
 
 **Example Query:**
 ```sql
-[out:xml][timeout:25];
+[out:xml][timeout:50];
 (
-  way["aeroway"="runway"](36.05, -79.97, 36.12, -79.92);
-  way["aeroway"="taxiway"](36.05, -79.97, 36.12, -79.92);
-  way["aeroway"="apron"](36.05, -79.97, 36.12, -79.92);
-  node["aeroway"="gate"](36.05, -79.97, 36.12, -79.92);
+  way["aeroway"~"runway|taxiway|apron"](around:3000,36.0978,-79.9373);
+  way["building"="terminal"](around:3000,36.0978,-79.9373);
+  node["aeroway"="gate"](around:3000,36.0978,-79.9373);
 );
-out body;
->;
-out skel qt;
+(._;>;);  // ← This line is critical to include nodes
+out meta;
+
 ```
 
 ---
