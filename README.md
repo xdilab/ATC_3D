@@ -32,6 +32,7 @@ This phase includes:
 ## Links to Tutorials 
 
 Blosm - https://www.youtube.com/watch?v=Thx08Q4etVc
+
 BlenderGIS - https://www.youtube.com/watch?v=h-ALdlxfygI&t=919s
 
 
