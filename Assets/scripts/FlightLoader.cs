@@ -31,7 +31,7 @@ public class FlightLoader : MonoBehaviour
     public Transform planePrefab;
 
     [Tooltip("CSV file inside StreamingAssets")]
-    public string csvFileName = "flights2.csv";
+    public string csvFileName = "convertedatc.csv";
 
     [Header("Airport anchor (°)")]
     [Tooltip("Reference latitude for Unity (0,0) origin")]

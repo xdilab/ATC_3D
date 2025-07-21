@@ -62,7 +62,7 @@ This version implements:
 - **Unity 2022.3 LTS**
 - **Visual Studio** (with Unity workload)
 - **TextMeshPro** (included in Unity)
-- **Python to handle raw atc logs**
+- **Python to handle raw atc logs** (`pip install pandas openpyxl`)
 
 ### ✅ 2. Open Project in Unity
 1. Clone this repository or download the ZIP.
@@ -83,8 +83,18 @@ This version implements:
 FlightID, Time(sec), Latitude, Longitude, Altitude
 ```
 ### ✅ How to Convert Raw ATC Data → Unity CSV
-Use CSVRelatedParts/logsconverter.py for converting snapshot_final_24hr(in).csv is already converted and ready to go labeled as `convertedatc.py`.
+Use `CSVRelatedParts/logsconverter.py` for converting.
 
+1. Place `snapshot_final_24hr.xlsx` and `logsconverter.py` in the same folder (`CSVRelatedParts`).
+2. Run:
+```bash
+python logsconverter.py
+```
+3. Output: `convertedatc.csv`
+4. Make sure it is placed in **Unity → Assets → StreamingAssets/**
+
+snapshot_final_24hr(in).csv is already converted and ready to go labeled as `convertedatc.py`
+---
 ---
 
 ## ▶ How to Run Simulation

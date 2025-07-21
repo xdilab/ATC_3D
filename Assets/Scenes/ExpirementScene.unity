@@ -1344,7 +1344,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 862525097}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.54464287
+  m_Size: 0.5446168
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -4981,7 +4981,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 91.499985}
+  m_AnchoredPosition: {x: 0, y: 91.49998}
   m_SizeDelta: {x: 183, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1052227253
@@ -5346,7 +5346,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   planePrefab: {fileID: 521984754}
-  csvFileName: flights2.csv
+  csvFileName: convertedatc.csv
   refLat: 36.09778
   refLon: -79.93722
   planeLabelPrefab: {fileID: 1959455991}
