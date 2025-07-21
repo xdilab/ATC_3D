@@ -68,8 +68,10 @@ This version implements:
 1. Clone this repository or download the ZIP.
 2. Open the `ATC_3D` folder in **Unity Hub**.
 3. Load the main scene.
+▶️ [Watch the Demo Video on YouTube](https://youtu.be/mtaoOmualhk)
 
 ### ✅ 3. Configure Prefabs & UI
+**Should come preconfigured**
 - Assign `planePrefab`, `planeLabelPrefab`, and `hudEntryPrefab` in **FlightLoader**.
 - Ensure **HUD Canvas** contains:
   - Scroll View for aircraft list
