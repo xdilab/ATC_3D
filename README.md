@@ -192,7 +192,7 @@ snapshot_final_24hr(in).csv is already converted and ready to go labeled as `con
 ## Running the Simulation
 
 - Place your flight data CSV in `StreamingAssets`.
-- Configure the desired parameters in `FlightLoader`, `ClearanceProbe`, and other scripts via the Unity Inspector.
+- Configure the desired parameters in `FlightLoader` - CsvNamearea via the Unity Inspector.
 - Press **Play** in Unity to start the simulation.
 - Check the Unity Console for incident reports and debug logs.
 - Recorded incident videos will appear in your project's persistent data directory (`AppData`/`Application.persistentDataPath`).
