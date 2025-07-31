@@ -571,13 +571,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 189734085}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.3907311, z: -0, w: 0.9205049}
-  m_LocalPosition: {x: -41.976257, y: -170.98961, z: 1144.0801}
+  m_LocalRotation: {x: -0, y: 0.71101654, z: -0, w: 0.7031753}
+  m_LocalPosition: {x: 118, y: -170.98961, z: 1144}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1152231038}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90.635, z: 0}
 --- !u!1 &251283542
 GameObject:
   m_ObjectHideFlags: 0
@@ -1043,14 +1043,47 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 027696246acb7a647a70f215721506b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  refLat: 36.0907778
-  refLon: -79.9450556
-  refAltM: 270
+  refLat: 36.1005708
+  refLon: -79.9418020833
+  worldRoot: {fileID: 1152231038}
+  yOffset: 0
+  yScale: 1
   northAlignmentDeg: -134.326
   enuScale: 0.967422
-  altitudeOffsetM: 0
-  originUnityPosition: {x: 2995.8, y: -157.8, z: 1072.4}
-  setOriginOnAwake: 1
+  refAltM: 270
+  controls:
+  - name: 23L
+    lat: 36.11014245
+    lon: -79.92031005
+    unityXZ: {x: -45.60498, y: 1144.037}
+  - name: 5R
+    lat: 36.0910578
+    lon: -79.9446582
+    unityXZ: {x: 3060, y: 1070}
+  - name: Intersection
+    lat: 36.092111
+    lon: -79.943472
+    unityXZ: {x: 118, y: 1144}
+  solved: 1
+  rmsError: 8.73847e-10
+  debugA:
+    e00: 195.38863
+    e01: -203.76398
+    e02: 0
+    e03: 0
+    e10: -4.9304733
+    e11: 5.1397734
+    e12: 0
+    e13: 0
+    e20: 0
+    e21: 0
+    e22: 1
+    e23: 0
+    e30: 0
+    e31: 0
+    e32: 0
+    e33: 1
+  debugT: {x: -161775.12, y: 5227.322}
 --- !u!4 &290506251
 Transform:
   m_ObjectHideFlags: 0
@@ -1229,7 +1262,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &330585545
 Camera:
   m_ObjectHideFlags: 0
@@ -1434,8 +1467,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 862525098}
   m_HandleRect: {fileID: 862525097}
   m_Direction: 2
-  m_Value: 1.0000048
-  m_Size: 0.54461426
+  m_Value: 1
+  m_Size: 0.54463804
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -3388,7 +3421,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 668098378}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &668098381
 Camera:
   m_ObjectHideFlags: 0
@@ -3538,7 +3571,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705331791}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &705331794
 Camera:
   m_ObjectHideFlags: 0
@@ -3984,7 +4017,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 807475592}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aef89fba41d1317429826bb029970f4b, type: 3}
   m_Name: 
@@ -4318,7 +4351,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 891951326}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &891951329
 Camera:
   m_ObjectHideFlags: 0
@@ -5234,7 +5267,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 91.49927}
+  m_AnchoredPosition: {x: 0, y: 91.49998}
   m_SizeDelta: {x: 183, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1052227253
@@ -5630,17 +5663,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   planePrefab: {fileID: 521984754}
-  csvAsset: {fileID: 0}
-  csvFileName: runway_incident.csv
-  geo: {fileID: 290506250}
-  csvAltIsFeet: 0
+  csvFileName: tailgate.csv
+  refLat: 36.092
+  refLon: -79.9357
   planeLabelPrefab: {fileID: 1959455991}
   hudEntryPrefab: {fileID: 8009565083043474941, guid: db99f4beb323e9e41a0cfb69b74671dd, type: 3}
   hudPanel: {fileID: 1244205398}
+  worldRoot: {fileID: 1152231038}
+  geoMapper: {fileID: 290506250}
+  spawnChaseCam: 1
   selections:
-  - id: RWY_A
+  - id: TAIL_A
     spawn: 1
-  - id: RWY_B
+  - id: TAIL_B
     spawn: 1
 --- !u!4 &1152231038
 Transform:
@@ -5674,6 +5709,7 @@ Transform:
   - {fileID: 290506251}
   - {fileID: 807475593}
   - {fileID: 1217587346}
+  - {fileID: 1712436511}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1163311766
@@ -5937,7 +5973,7 @@ GameObject:
   - component: {fileID: 1217587346}
   - component: {fileID: 1217587343}
   - component: {fileID: 1217587345}
-  - component: {fileID: 1217587344}
+  - component: {fileID: 1217587347}
   m_Layer: 0
   m_Name: IncidentSystem
   m_TagString: Untagged
@@ -5959,35 +5995,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   geo: {fileID: 290506250}
   cameraDirector: {fileID: 1217587345}
-  capture: {fileID: 1217587344}
+  capture: {fileID: 1217587347}
   outputDir: Captures
-  captureFps: 30
-  postRollSec: 6
---- !u!114 &1217587344
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1217587342}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df8682b0619021741b1f1af503b6900a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  sourceCamera: {fileID: 0}
-  followMainCamera: 1
-  width: 1280
-  height: 720
-  targetFps: 30
-  enablePreRoll: 1
-  preRollSec: 5
-  encodeOnStop: 1
-  ffmpegPath: ffmpeg
-  outputName: incident.mp4
-  crf: 23
-  preset: veryfast
-  deleteFramesAfterEncode: 1
+  postRollSec: 2
 --- !u!114 &1217587345
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6060,7 +6070,7 @@ MonoBehaviour:
   alwaysEnableBaseCamera: 1
   ignoreCamerasUnderAircraft: 1
   requireAirportMarker: 1
-  ignoreTag: 1
+  ignoreTag: 0
   planeCameraTag: PlaneCamera
   ignoreNameContains: Chase
   explicitIgnore: []
@@ -6083,6 +6093,31 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1152231038}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1217587347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1217587342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df8682b0619021741b1f1af503b6900a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sourceCamera: {fileID: 0}
+  followMainCamera: 1
+  width: 1280
+  height: 720
+  targetFps: 30
+  enablePreRoll: 1
+  preRollSec: 5
+  encodeOnStop: 1
+  ffmpegPath: ffmpeg
+  outputName: incident.mp4
+  crf: 23
+  preset: veryfast
+  deleteFramesAfterEncode: 1
 --- !u!1 &1244205397
 GameObject:
   m_ObjectHideFlags: 0
@@ -6430,7 +6465,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1306979592}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: be166c07335b2234a886823821f542b6, type: 3}
   m_Name: 
@@ -6905,13 +6940,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1411487054}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.3907311, z: -0, w: 0.9205049}
-  m_LocalPosition: {x: 1782.9254, y: -174.98964, z: 1084.822}
+  m_LocalRotation: {x: -0, y: 0.0057024187, z: -0, w: 0.9999837}
+  m_LocalPosition: {x: 3060, y: -174.98964, z: 1070}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1152231038}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0.653, z: 0}
 --- !u!1 &1431813126
 GameObject:
   m_ObjectHideFlags: 0
@@ -7012,7 +7047,7 @@ Transform:
   m_GameObject: {fileID: 1454959546}
   serializedVersion: 2
   m_LocalRotation: {x: 0.10648795, y: -0.653457, z: 0.08927193, w: 0.7441001}
-  m_LocalPosition: {x: -425.11746, y: -68, z: 812.69885}
+  m_LocalPosition: {x: -302, y: 97, z: 798}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7677,6 +7712,52 @@ RectTransform:
   m_AnchoredPosition: {x: -5, y: 0}
   m_SizeDelta: {x: -20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1712436510
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1712436511}
+  - component: {fileID: 1712436512}
+  m_Layer: 0
+  m_Name: ForceStop
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1712436511
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1712436510}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1152231038}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1712436512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1712436510}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a3b2f3fc571ddb4685677a6490699e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  captureService: {fileID: 1217587347}
+  forceStopKey: 32
 --- !u!224 &1724759101 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5059369728167939687, guid: 4021042b423add14c8de11028c39b01e, type: 3}
@@ -8081,7 +8162,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 500663628}
   m_HandleRect: {fileID: 500663627}
   m_Direction: 0
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
