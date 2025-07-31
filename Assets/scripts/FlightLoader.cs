@@ -13,14 +13,12 @@ using UnityEditor;
 
 /// <summary>
 /// Replays aircraft tracks from a five-column CSV and spawns:
-/// <list type="bullet">
-///   <item>an animated plane prefab per selected flight</item>
-///   <item>a world-space text label above each plane</item>
-///   <item>a HUD row (button) that can switch to a chase-camera view</item>
-///   <item>a fixed yellow LineRenderer path for visual reference</item>
-/// </list>
-/// Expected CSV columns (no header order change) (done through script that takes in raw csv):
-/// <code>flight_id , seconds_since_midnight , latitude_deg , longitude_deg , altitude_m</code>
+/// - an animated plane prefab per selected flight
+/// - a world-space text label above each plane
+/// - a HUD row (button) that can switch to a chase-camera view (optional)
+/// - a fixed yellow LineRenderer path for visual reference
+/// CSV columns (no header order change):
+///   flight_id , seconds_since_midnight , latitude_deg , longitude_deg , altitude_m
 /// </summary>
 public class FlightLoader : MonoBehaviour
 {
@@ -47,9 +45,19 @@ public class FlightLoader : MonoBehaviour
     [Tooltip("Parent VerticalLayoutGroup / ScrollRect Content transform")]
     public Transform hudPanel;
 
+    [Header("Scene root")]
+    [Tooltip("Set to your WorldRoot so planes/paths inherit its rotation & scale")]
+    public Transform worldRoot;
+
+    [Header("Geo Mapper (affine)")]
+    public GeoMapper geoMapper;
+
+    [Header("Debug (optional)")]
+    [Tooltip("If ON, also spawn a chase camera parented to each plane")]
+    public bool spawnChaseCam = false;
+
     /* ───────────────────────── Flight-selection list ─────────────────────────── */
 
-    /// <summary>Checkbox entry shown in the Inspector.</summary>
     [Serializable]
     public class FlightSel { public string id; public bool spawn; }
 
@@ -93,7 +101,6 @@ public class FlightLoader : MonoBehaviour
             ids.Add(ln.Split(',')[0]);
         }
 
-        /* preserve previous check states where possible */
         var old = selections.ToDictionary(s => s.id, s => s.spawn);
         selections = ids.OrderBy(id => id)
                         .Select(id => new FlightSel {
@@ -107,15 +114,17 @@ public class FlightLoader : MonoBehaviour
 
     void Awake()
     {
-        metersPerLat = 111_320f;                                        // constant
+        metersPerLat = 111_320f;                                        
         metersPerLon = Mathf.Cos((float)refLat * Mathf.Deg2Rad) * 111_320f;
     }
 
     void Start()
     {
+        if (!worldRoot) worldRoot = this.transform;
+
         LoadCsv(Path.Combine(Application.streamingAssetsPath, csvFileName));
         PlaybackController.SetTimeBounds(earliest, latest);
-        PlaybackController.simTime = earliest;                          // start clock
+        PlaybackController.simTime = earliest;
 
         var wanted = new HashSet<string>(selections.Where(s => s.spawn).Select(s => s.id));
         foreach (var kv in tracks)
@@ -127,7 +136,6 @@ public class FlightLoader : MonoBehaviour
 
     /* ───────────────────────────── CSV loader ──────────────────────────────── */
 
-    /// <summary>Parses CSV rows into the <see cref="tracks"/> dictionary.</summary>
     void LoadCsv(string path)
     {
         using var sr = new StreamReader(path);
@@ -143,7 +151,7 @@ public class FlightLoader : MonoBehaviour
             string id = s[0];
 
             var p = new Point {
-                t   = float.Parse (s[1], CultureInfo.InvariantCulture),
+                t   = float.Parse(s[1], CultureInfo.InvariantCulture),
                 lat = double.Parse(s[2], CultureInfo.InvariantCulture),
                 lon = double.Parse(s[3], CultureInfo.InvariantCulture),
                 alt = double.Parse(s[4], CultureInfo.InvariantCulture)
@@ -160,27 +168,32 @@ public class FlightLoader : MonoBehaviour
 
     /* ─────────────────────────── Plane animation ──────────────────────────── */
 
-    /// <summary>Coroutine that animates one aircraft along its track.</summary>
     IEnumerator Animate(string id, List<Point> pts)
     {
         if (pts.Count < 2) yield break;
 
-        var plane = Instantiate(planePrefab, ToUnity(pts[0]), Quaternion.identity);
-        plane.name         = id;
-        planeTf[id]        = plane;
-        segIndex[id]       = 0;
+        // Spawn at world position
+        var startWorld = ToWorld(ToUnityLocal(pts[0]));
+        var plane = Instantiate(planePrefab, startWorld, Quaternion.identity, worldRoot);
+        plane.name   = id;
+        planeTf[id]  = plane;
+        segIndex[id] = 0;
 
         SpawnPath(id, pts);
         AttachLabel(plane, id);
         AttachHudEntry(id);
-        var cam = AttachChaseCam(plane, id);
 
+        if (spawnChaseCam)
+            AttachChaseCam(plane, id);
+
+        // Animate through waypoints
         for (int seg = 0; seg < pts.Count - 1; seg++)
         {
-            var a  = pts[seg]; var b = pts[seg + 1];
-            Vector3 A = ToUnity(a), B = ToUnity(b);
-            float dt = b.t - a.t, t = 0f;
+            var a = pts[seg]; var b = pts[seg + 1];
+            Vector3 A = ToWorld(ToUnityLocal(a));
+            Vector3 B = ToWorld(ToUnityLocal(b));
 
+            float dt = b.t - a.t, t = 0f;
             while (t < dt)
             {
                 if (!PlaybackController.paused)
@@ -192,13 +205,27 @@ public class FlightLoader : MonoBehaviour
                     plane.forward  = (B - A).normalized;
 
                     UpdateHud(id,
-                              Mathf.Lerp((float)a.lat,(float)b.lat,α),
-                              Mathf.Lerp((float)a.lon,(float)b.lon,α),
-                              Mathf.Lerp((float)a.alt,(float)b.alt,α));
+                              Mathf.Lerp((float)a.lat, (float)b.lat, α),
+                              Mathf.Lerp((float)a.lon, (float)b.lon, α),
+                              Mathf.Lerp((float)a.alt, (float)b.alt, α));
                 }
                 yield return null;
             }
             segIndex[id] = seg + 1;
+        }
+
+        // ─── HOLD LAST POSITION ───
+        Vector3 finalPos = plane.position;
+        Vector3 finalFwd = plane.forward;
+        float holdTime = 10f; // seconds to linger after last waypoint
+        float elapsed = 0f;
+        while (elapsed < holdTime)
+        {
+            if (!PlaybackController.paused)
+                elapsed += Time.deltaTime * PlaybackController.speed;
+            plane.position = finalPos;
+            plane.forward  = finalFwd;
+            yield return null;
         }
     }
 
@@ -211,7 +238,6 @@ public class FlightLoader : MonoBehaviour
         foreach (var id in tracks.Keys) Seek(id, tSec);
     }
 
-    /// <summary>Instantly moves one plane to its position at absolute time <paramref name="tSec"/>.</summary>
     void Seek(string id, float tSec)
     {
         if (!planeTf.TryGetValue(id, out var tf)) return;
@@ -223,7 +249,6 @@ public class FlightLoader : MonoBehaviour
         while (i < pts.Count - 2 && tSec > pts[i + 1].t) i++;
         while (i > 0              && tSec < pts[i].t)    i--;
 
-        /* keep index in-bounds so pts[i+1] is always valid */
         if (i >= pts.Count - 1) i = pts.Count - 2;
         if (i < 0)              i = 0;
         segIndex[id] = i;
@@ -231,26 +256,33 @@ public class FlightLoader : MonoBehaviour
         var a = pts[i]; var b = pts[i + 1];
         float α = Mathf.InverseLerp(a.t, b.t, tSec);
 
-        tf.position = Vector3.Lerp(ToUnity(a), ToUnity(b), α);
-        tf.forward  = (ToUnity(b) - ToUnity(a)).normalized;
+        Vector3 Aw = ToWorld(ToUnityLocal(a));
+        Vector3 Bw = ToWorld(ToUnityLocal(b));
+
+        tf.position = Vector3.Lerp(Aw, Bw, α);
+        tf.forward  = (Bw - Aw).normalized;
 
         UpdateHud(id,
-                  Mathf.Lerp((float)a.lat,(float)b.lat,α),
-                  Mathf.Lerp((float)a.lon,(float)b.lon,α),
-                  Mathf.Lerp((float)a.alt,(float)b.alt,α));
+                  Mathf.Lerp((float)a.lat, (float)b.lat, α),
+                  Mathf.Lerp((float)a.lon, (float)b.lon, α),
+                  Mathf.Lerp((float)a.alt, (float)b.alt, α));
     }
 
     /* ───────────────────────────── Helper builders ─────────────────────────── */
 
     void SpawnPath(string id, List<Point> pts)
     {
-        var lr = new GameObject(id + "_Path").AddComponent<LineRenderer>();
+        var go = new GameObject(id + "_Path");
+        go.transform.SetParent(worldRoot, false);
+        var lr = go.AddComponent<LineRenderer>();
         lr.material      = new Material(Shader.Find("Sprites/Default"));
         lr.startWidth    = lr.endWidth = 2f;
         lr.startColor    = lr.endColor = Color.yellow;
         lr.positionCount = pts.Count;
+        lr.useWorldSpace = true;
+
         for (int i = 0; i < pts.Count; i++)
-            lr.SetPosition(i, ToUnity(pts[i]));
+            lr.SetPosition(i, ToWorld(ToUnityLocal(pts[i])));
     }
 
     Camera AttachChaseCam(Transform plane, string id)
@@ -264,8 +296,6 @@ public class FlightLoader : MonoBehaviour
         cam.depth   = 1;
         cam.enabled = false;
         chaseCam[id] = cam;
-
-        if (Camera.main == null) cam.tag = "MainCamera";
         return cam;
     }
 
@@ -298,21 +328,25 @@ public class FlightLoader : MonoBehaviour
     {
         if (!chaseCam.ContainsKey(id)) return;
         foreach (var kv in chaseCam) { kv.Value.enabled = false; kv.Value.tag = "Untagged"; }
-        if (Camera.main) Camera.main.enabled = false;
-
         chaseCam[id].enabled = true;
-        chaseCam[id].tag     = "MainCamera";
+        chaseCam[id].tag     = "Untagged";
     }
 
     /* ───────────────────────── Latitude/Longitude → Unity ───────────────────── */
 
-    Vector3 ToUnity(Point p)                    => ToUnity(p.lat, p.lon, p.alt);
-    Vector3 ToUnity(double lat, double lon, double alt)
+    Vector3 ToUnityLocal(Point p)                 => ToUnityLocal(p.lat, p.lon, p.alt);
+
+    Vector3 ToUnityLocal(double lat, double lon, double alt)
     {
-        float x = (float)((lon - refLon) * metersPerLon);   // East
-        float z = (float)((lat - refLat) * metersPerLat);   // North
+        if (geoMapper)
+            return geoMapper.LatLonAltToUnity(lat, lon, alt);
+
+        float x = (float)((lon - refLon) * metersPerLon);
+        float z = (float)((lat - refLat) * metersPerLat);
         return new Vector3(x, (float)alt, z);
     }
+
+    Vector3 ToWorld(Vector3 local) => worldRoot ? worldRoot.TransformPoint(local) : local;
 }
 
 /* ───────────── User-friendly custom Inspector for flight list ───────────── */

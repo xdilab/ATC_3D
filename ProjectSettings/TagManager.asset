@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Gate 29
   - taxiway
+  - Aircraft
   layers:
   - Default
   - TransparentFX
