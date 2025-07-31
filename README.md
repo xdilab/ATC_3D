@@ -63,6 +63,22 @@ This version implements:
 - **Visual Studio** (with Unity workload)
 - **TextMeshPro** (included in Unity)
 - **Python to handle raw atc logs** (`pip install pandas openpyxl`)
+- **Install FFMpeg for Incident Clips**:
+-    2 Methods:
+       Open PowerShell or Command Prompt as Administrator
+          enter: winget install --id=FFmpeg.FFmpeg --source=winget
+            then check using: ffmpeg -version
+        If that doesnt work then use this:
+           Set-ExecutionPolicy Bypass -Scope Process -Force; `
+            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
+            iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+            Then enter this:
+               choco install ffmpeg -y
+            and check with this:
+                  ffmpeg -version
+
+
+
 
 ### ✅ 2. Open Project in Unity
 1. Clone this repository or download the ZIP.
