@@ -11,12 +11,12 @@ public class ClearanceProbe : MonoBehaviour
     [Header("Geometry")]
     public Transform leftWingTip;
     public Transform rightWingTip;
-    public float bodyRadiusM = 3f;            // approximate fuselage radius
+    public float bodyRadiusM = 10f;            // approximate fuselage radius
 
     [Header("Detection (no layers required)")]
-    public float queryRadiusM = 25f;          // search radius around aircraft
-    public float warnClearanceM = 7.5f;       // WARNING below this
-    public float incidentClearanceM = 3.0f;   // INCIDENT below this
+    public float queryRadiusM = 80f;          // search radius around aircraft
+    public float warnClearanceM = 60f;       // WARNING below this
+    public float incidentClearanceM = 50f;   // INCIDENT below this
     public float predictTtcSec = 6.0f;        // Predicted if TTC < this
 
     [Header("Filtering")]

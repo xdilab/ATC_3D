@@ -14,9 +14,9 @@ using UnityEditor;
 /// <summary>
 /// Replays aircraft tracks from a five-column CSV and spawns:
 /// - an animated plane prefab per selected flight
-/// - a world-space text label above each plane
+/// - a world-space text label above each plane (toggleable)
 /// - a HUD row (button) that can switch to a chase-camera view (optional)
-/// - a fixed yellow LineRenderer path for visual reference
+/// - a fixed yellow LineRenderer path for visual reference (toggleable)
 /// CSV columns (no header order change):
 ///   flight_id , seconds_since_midnight , latitude_deg , longitude_deg , altitude_m
 /// </summary>
@@ -55,6 +55,13 @@ public class FlightLoader : MonoBehaviour
     [Header("Debug (optional)")]
     [Tooltip("If ON, also spawn a chase camera parented to each plane")]
     public bool spawnChaseCam = false;
+
+    [Header("Visibility (pre-load)")]
+    [Tooltip("Spawn fixed LineRenderer paths for each flight")]
+    public bool showTrajectories = true;
+
+    [Tooltip("Spawn world-space flight labels above planes")]
+    public bool showLabels = true;
 
     /* ───────────────────────── Flight-selection list ─────────────────────────── */
 
@@ -114,7 +121,7 @@ public class FlightLoader : MonoBehaviour
 
     void Awake()
     {
-        metersPerLat = 111_320f;                                        
+        metersPerLat = 111_320f;
         metersPerLon = Mathf.Cos((float)refLat * Mathf.Deg2Rad) * 111_320f;
     }
 
@@ -179,8 +186,8 @@ public class FlightLoader : MonoBehaviour
         planeTf[id]  = plane;
         segIndex[id] = 0;
 
-        SpawnPath(id, pts);
-        AttachLabel(plane, id);
+        if (showTrajectories) SpawnPath(id, pts);
+        if (showLabels)       AttachLabel(plane, id);
         AttachHudEntry(id);
 
         if (spawnChaseCam)
@@ -347,6 +354,10 @@ public class FlightLoader : MonoBehaviour
     }
 
     Vector3 ToWorld(Vector3 local) => worldRoot ? worldRoot.TransformPoint(local) : local;
+
+    /* ───────────────────────── UI Toggle hook methods (optional) ─────────────── */
+    public void SetShowTrajectories(bool v) { showTrajectories = v; }
+    public void SetShowLabels(bool v)       { showLabels = v; }
 }
 
 /* ───────────── User-friendly custom Inspector for flight list ───────────── */
