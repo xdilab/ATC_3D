@@ -30,6 +30,27 @@ public class AirportGroundCamSpawner : MonoBehaviour
     public float nearClip = 0.1f;
     public float farClip = 5000f;
 
+        // Registers a camera with the CameraDirector, avoiding duplicates
+        void RegisterCameraWithDirector(Camera cam, string name)
+        {
+            var director = FindAnyObjectByType<CameraDirector>();
+            if (director != null)
+            {
+                if (!director.rigs.Exists(r => r.camera == cam))
+                {
+                    var rig = new CameraRig
+                    {
+                        name = name,
+                        camera = cam,
+                        pivot = cam.transform,
+                        fov = cam.fieldOfView,
+                        weight = 1f
+                    };
+                    director.rigs.Add(rig);
+                }
+            }
+        }
+
 #if UNITY_EDITOR
     [ContextMenu("Generate Ground Cameras")]
     public void Generate()
@@ -56,14 +77,18 @@ public class AirportGroundCamSpawner : MonoBehaviour
             cam.nearClipPlane = nearClip;
             cam.farClipPlane = farClip;
             cam.rect = new Rect(0, 0, 1, 1);
-            cam.depth = 0;
+            cam.depth = 0; //a
 
             var al = go.AddComponent<AudioListener>();
             al.enabled = false;
+
+            // Register camera with CameraDirector (runtime/editor)
+            RegisterCameraWithDirector(cam, go.name);
         }
 
         Debug.Log($"[AirportGroundCamSpawner] Generated {cameraCount} cameras at Y={maxY} under '{parent.name}'.");
     }
+
 
     [ContextMenu("Group Existing GCam_* Under Parent")]
     public void GroupExisting()

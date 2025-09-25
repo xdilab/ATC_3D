@@ -17,8 +17,10 @@ public class GeoMapper : MonoBehaviour
     public Transform worldRoot;         // everything (planes/map) should be parented here
 
     [Header("Altitude mapping")]
-    public float yOffset = 0f;          // add this to Y
+    public float yOffset = 0f;          // add this to Y (set to 0 for raw altitudes)
     public float yScale  = 1f;          // multiply (alt_m * yScale) + yOffset
+    [Tooltip("If true, forces altitude to exactly match CSV value")]
+    public bool forceExactAltitude = true;  // bypass scaling for exact heights
 
     [Header("Legacy knobs (for tools/tests only)")]
     [Tooltip("Kept for GeoTestHarness compatibility; not used by the affine fit.")]
@@ -80,7 +82,7 @@ public class GeoMapper : MonoBehaviour
             z = (float)n;
         }
 
-        float y = (float)(alt * yScale) + yOffset;
+        float y = forceExactAltitude ? (float)alt : (float)(alt * yScale) + yOffset;
         return new Vector3(x, y, z);
     }
 

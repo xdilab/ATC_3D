@@ -40,13 +40,37 @@ public class CameraDirector : MonoBehaviour
 
     [Header("Integration")]
     public bool tagSelectedAsMainCamera = false;     // default OFF since we drive CaptureService directly
-    public float selectionCooldownSec = 0.5f;        // avoid rapid toggles
+    public float selectionCooldownSec = 0.05f;       // very short cooldown to ensure we catch incidents
 
+    
     [Header("Debug")]
     public bool logSelections = false;
 
     Camera _activeCam;
     float _nextSwitchTime = 0f;
+
+    // Automatically rebuilds the rig list from all cameras with the spawner prefix
+    public void RefreshRigs()
+    {
+        rigs.Clear();
+        var cams = GameObject.FindObjectsOfType<Camera>(true); // include inactive
+        foreach (var cam in cams)
+        {
+            if (!cam.name.StartsWith("GCam_")) continue;   // match spawner prefix
+            rigs.Add(new CameraRig {
+                name   = cam.name,
+                camera = cam,
+                pivot  = cam.transform,
+                fov    = cam.fieldOfView,
+                weight = 1f
+            });
+        }
+    }
+
+    void Awake()
+    {
+        RefreshRigs();     // auto-populate at startup
+    }
 
     public void Focus(IncidentEvent e)
     {
@@ -73,13 +97,17 @@ public class CameraDirector : MonoBehaviour
             // Skip URP Overlay cameras if requested
             if (skipUrpOverlayCameras && IsUrpOverlay(r.camera)) continue;
 
-            // Score by distance + LOS + manual weight
+            // Improved scoring: prioritize proximity and clear LOS
             Vector3 to = e.worldPos - r.camera.transform.position;
             float dist = to.magnitude;
-            float score = -dist * 0.5f + r.weight * 10f;
-
+            float score = 0f;
+            // Stronger proximity weight
+            score += -dist * 1.5f;
+            // Manual weight
+            score += r.weight * 10f;
+            // Line of sight bonus
             if (occluders != 0 && !Physics.Raycast(r.camera.transform.position, to.normalized, dist, occluders))
-                score += 25f;
+                score += 50f;
 
             if (score > bestScore) { bestScore = score; best = r; }
         }
@@ -121,13 +149,28 @@ public class CameraDirector : MonoBehaviour
             if (baseCamera && baseCamera != best.camera) baseCamera.tag = "Untagged";
         }
 
-        // PTZ aim
+        // PTZ aim - center the incident in camera view
         var pivot = best.pivot ? best.pivot : best.camera.transform;
-        Vector3 look = e.worldPos - pivot.position; look.y += 3f;
-        if (look.sqrMagnitude > 0.1f)
-            pivot.rotation = Quaternion.Slerp(pivot.rotation, Quaternion.LookRotation(look), 0.25f);
+        Vector3 incidentPos = e.worldPos;
+        
+        // Add height offset for better viewing angle (looking slightly down)
+        Vector3 cameraToIncident = incidentPos - pivot.position;
+        float distance = cameraToIncident.magnitude;
+        
+        // Elevate the target point slightly for better framing
+        Vector3 targetLookPos = incidentPos + Vector3.up * 2f;
+        
+        // Point camera directly at the incident
+        Vector3 lookDirection = (targetLookPos - pivot.position).normalized;
+        if (lookDirection.sqrMagnitude > 0.1f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
+            pivot.rotation = Quaternion.Slerp(pivot.rotation, targetRotation, 0.5f); // Faster rotation
+        }
 
-        best.camera.fieldOfView = Mathf.Lerp(best.camera.fieldOfView, best.fov, 0.25f);
+        // Adjust field of view based on distance to incident for optimal framing
+        float optimalFov = CalculateOptimalFov(distance);
+        best.camera.fieldOfView = Mathf.Lerp(best.camera.fieldOfView, optimalFov, 0.3f);
 
         // ---- Capture hookup: record THIS CCTV camera directly ----
         if (capture)
@@ -140,6 +183,17 @@ public class CameraDirector : MonoBehaviour
         _nextSwitchTime = Time.time + selectionCooldownSec;
 
         if (logSelections) Debug.Log($"[CameraDirector] Selected rig: {best.name ?? best.camera.name}");
+    }
+
+    // Calculate optimal field of view based on distance to incident
+    float CalculateOptimalFov(float distance)
+    {
+        // Close incidents need wider FOV to see more context
+        // Far incidents need narrower FOV to zoom in
+        if (distance < 50f) return 75f;        // Wide view for close incidents
+        else if (distance < 150f) return 60f;  // Medium view for medium distance
+        else if (distance < 300f) return 45f;  // Narrow view for far incidents
+        else return 35f;                       // Very narrow for very far incidents
     }
 
     // Detect URP Overlay without a hard URP dependency (reflection)

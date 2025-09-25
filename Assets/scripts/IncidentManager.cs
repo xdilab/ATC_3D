@@ -13,7 +13,7 @@ public class IncidentManager : MonoBehaviour
     [Tooltip("Folder under persistentDataPath where clips & logs go")]
     public string outputDir = "Captures";
     [Tooltip("Seconds to keep recording after Cleared")]
-    public float  postRollSec = 5f;
+    public float  postRollSec = 3f;         // 3 seconds after incident for 8-second total clips
 
     void Awake()
     {
@@ -45,7 +45,7 @@ public class IncidentManager : MonoBehaviour
         File.AppendAllText(path, JsonUtility.ToJson(e) + "\n");
         Debug.Log($"[IncidentManager]    Logged event to {path}");
 
-        // 3) Camera selection & hook (once per event)
+        // 3) Switch cameras first so pre-roll captures from correct view
         if (e.phase == IncidentPhase.Predicted || e.phase == IncidentPhase.Live)
         {
             if (cameraDirector != null)
@@ -70,19 +70,35 @@ public class IncidentManager : MonoBehaviour
             }
         }
 
-        // 4) Drive the CaptureService
-        if (capture != null)
+        // Slow down simulation when incident is predicted to see it develop
+        if (e.phase == IncidentPhase.Predicted)
         {
-            if (e.phase == IncidentPhase.Predicted || e.phase == IncidentPhase.Live)
-            {
-                Debug.Log($"[IncidentManager]    START capture: {e.incidentId}");
-                capture.StartCapture(e.incidentId);
-            }
-            else if (e.phase == IncidentPhase.Cleared)
-            {
-                Debug.Log($"[IncidentManager]    STOP capture in {postRollSec}s: {e.incidentId}");
-                StartCoroutine(StopAfterDelay(e.incidentId, postRollSec));
-            }
+            StartCoroutine(SlowMotionForIncident(e.incidentId));
+        }
+
+        // 4) Start capture immediately during Predicted phase to catch lead-up
+        if (capture != null && e.phase == IncidentPhase.Predicted)
+        {
+            Debug.Log($"[IncidentManager]    START capture during PREDICTED phase: {e.incidentId}");
+            capture.StartCapture(e.incidentId);
+        }
+
+        // Pause simulation shortly after incident goes Live to capture the collision
+        if (e.phase == IncidentPhase.Live)
+        {
+            StartCoroutine(PauseAfterCollision(e.incidentId, 1.0f)); // Wait 1 second for collision to occur
+        }
+        
+        // 5) Handle stop capture
+        if (capture != null && e.phase == IncidentPhase.Cleared)
+        {
+            Debug.Log($"[IncidentManager]    STOP capture in {postRollSec}s: {e.incidentId}");
+            StartCoroutine(StopAfterDelay(e.incidentId, postRollSec));
+            
+            // Resume normal speed and simulation when incident is cleared
+            PlaybackController.ResumeSimulation();
+            RestoreNormalSpeed();
+            Debug.Log($"[IncidentManager]    Simulation RESUMED and speed restored after incident cleared: {e.incidentId}");
         }
     }
 
@@ -91,6 +107,13 @@ public class IncidentManager : MonoBehaviour
         yield return new WaitForSeconds(delay);
         Debug.Log($"[IncidentManager]    STOP capture: {incidentId}");
         capture.StopCapture(incidentId);
+    }
+
+    IEnumerator PauseAfterCollision(string incidentId, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        PlaybackController.PauseSimulation();
+        Debug.Log($"[IncidentManager]    Simulation PAUSED after collision: {incidentId}");
     }
 
     // ──────────────────────────────── Fallback camera helpers ────────────────────────────────
@@ -130,8 +153,22 @@ public class IncidentManager : MonoBehaviour
     void AimCamera(Camera cam, Vector3 focus, float minVFov, float maxVFov)
     {
         if (!cam) return;
-        cam.transform.LookAt(focus);
-        cam.fieldOfView = Mathf.Clamp(cam.fieldOfView, minVFov, maxVFov);
+        
+        // Calculate distance for optimal framing
+        float distance = Vector3.Distance(cam.transform.position, focus);
+        
+        // Point camera at incident with slight upward offset for better angle
+        Vector3 targetPos = focus + Vector3.up * 2f;
+        cam.transform.LookAt(targetPos);
+        
+        // Set optimal FOV based on distance
+        float optimalFov;
+        if (distance < 50f) optimalFov = 75f;        // Wide for close
+        else if (distance < 150f) optimalFov = 60f;  // Medium
+        else if (distance < 300f) optimalFov = 45f;  // Narrow for far
+        else optimalFov = 35f;                       // Very narrow for very far
+        
+        cam.fieldOfView = Mathf.Clamp(optimalFov, minVFov, maxVFov);
     }
 
     void ActivateAsMain(Camera cam)
@@ -182,5 +219,22 @@ public class IncidentManager : MonoBehaviour
 #else
         return Object.FindObjectsOfType<Camera>(true);
 #endif
+    }
+
+    // Store original speed for restoration
+    private float originalSpeed = 1f;
+
+    IEnumerator SlowMotionForIncident(string incidentId)
+    {
+        originalSpeed = PlaybackController.speed;
+        PlaybackController.speed = 0.2f; // Slow motion to 20% speed
+        Debug.Log($"[IncidentManager] Slow motion activated for incident: {incidentId}");
+        yield return null;
+    }
+
+    void RestoreNormalSpeed()
+    {
+        PlaybackController.speed = originalSpeed;
+        Debug.Log("[IncidentManager] Normal speed restored");
     }
 }

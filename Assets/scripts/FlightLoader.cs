@@ -60,7 +60,7 @@ public class FlightLoader : MonoBehaviour
     [Tooltip("Spawn fixed LineRenderer paths for each flight")]
     public bool showTrajectories = true;
 
-    [Tooltip("Spawn world-space flight labels above planes")]
+    [Tooltip("Spawn world-space flight labels above planes")] 
     public bool showLabels = true;
 
     /* ───────────────────────── Flight-selection list ─────────────────────────── */

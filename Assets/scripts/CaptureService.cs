@@ -16,7 +16,7 @@ public class CaptureService : MonoBehaviour
 
     [Header("Pre-roll buffer")]
     public bool enablePreRoll = true;
-    public float preRollSec = 5f;                 // amount to include BEFORE capture starts
+    public float preRollSec = 8f;                 // Longer pre-roll to capture more lead-up
 
     [Header("Encode to MP4 (ffmpeg)")]
     public bool encodeOnStop = true;

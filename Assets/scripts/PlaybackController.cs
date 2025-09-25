@@ -27,6 +27,20 @@ public class PlaybackController : MonoBehaviour
     /// <summary>Lower/upper bounds of the CSV day, set by <see cref="SetTimeBounds"/>.</summary>
     public static float tMin = 0f, tMax = 86_400f;
 
+    /// <summary>Pause the simulation (can be called from other scripts)</summary>
+    public static void PauseSimulation()
+    {
+        paused = true;
+        if (inst != null) inst.UpdateButtonStates();
+    }
+
+    /// <summary>Resume the simulation (can be called from other scripts)</summary>
+    public static void ResumeSimulation()
+    {
+        paused = false;
+        if (inst != null) inst.UpdateButtonStates();
+    }
+
     /* -------------------------------------------------------------------- */
     static PlaybackController inst;   // singleton (scene has exactly one)
 
@@ -100,6 +114,13 @@ public class PlaybackController : MonoBehaviour
         if (clockLabel)
             clockLabel.text =
                 simDay.AddSeconds(simTime).ToString("yyyy-MM-dd  HH:mm:ss");
+    }
+
+    void UpdateButtonStates()
+    {
+        // Update button interactability based on pause state
+        if (playButton) playButton.interactable = paused;
+        if (pauseButton) pauseButton.interactable = !paused;
     }
 
     /// <summary>

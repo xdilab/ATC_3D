@@ -14,10 +14,10 @@ public class ClearanceProbe : MonoBehaviour
     public float bodyRadiusM = 10f;            // approximate fuselage radius
 
     [Header("Detection (no layers required)")]
-    public float queryRadiusM = 80f;          // search radius around aircraft
-    public float warnClearanceM = 60f;       // WARNING below this
-    public float incidentClearanceM = 50f;   // INCIDENT below this
-    public float predictTtcSec = 6.0f;        // Predicted if TTC < this
+    public float queryRadiusM = 120f;        // Increased search radius for earlier detection
+    public float warnClearanceM = 100f;      // Larger WARNING threshold to catch planes earlier
+    public float incidentClearanceM = 60f;   // Increased INCIDENT threshold for earlier recording
+    public float predictTtcSec = 12.0f;      // Longer prediction time for earlier detection
 
     [Header("Filtering")]
     public bool requireMarker = true;         // only consider objects with ClearanceTarget
